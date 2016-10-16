@@ -39,35 +39,38 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
     }
 
     private Node<E> getNode(int index){
-        if(index == 0)
-            return first;
-        else if (index == size-1)
-            return last;
-        
-        Node<E> aux = first;
-        for (int i = 0; i < index; i++) {
-            aux = aux.next;
-        }
-        return aux;
-    }
-    
-    private void unlinkNode(Node<E> node, int index){
-        if (size == 1)
-            first = last = null;
-        else if (index == 0) {
-            first = node.next;
-            first.unlinkPrevious();
-        }
-        else if (index == size-1) {
-            last = node.prev;
-            last.unlinkNext();
-        }
-        else{
-            node.prev.next = node.next;
-            node.next.prev = node.prev;
+        if (index < (size >> 1)) {
+            Node<E> aux = first;
+            for (int i = 0; i < index; i++)
+                aux = aux.next;
+            return aux;
+        } 
+        else {
+            Node<E> aux = last;
+            for (int i = size - 1; i > index; i--)
+                aux = aux.prev;
+            return aux;
         }
     }
     
+//    private void unlinkNode(Node<E> node, int index){
+//        if (size == 1)
+//            first = last = null;
+//        else if (index == 0) {
+//            first = node.next;
+//            first.unlinkPrevious();
+//        }
+//        else if (index == size-1) {
+//            last = node.prev;
+//            last.unlinkNext();
+//        }
+//        else{
+//            System.out.println("Cayo al else");
+//            node.prev.next = node.next;
+//            node.next.prev = node.prev;
+//        }
+//    }
+//    
     private void unlinkNode(Node<E> node){
         /*
         if (size == 1) {
@@ -86,13 +89,29 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
         if (size == 1)
             first = last = null;
         
-        else if (node.prev != null)
-            node.prev.next = node.next;
+        else{
+            if (node.prev != null)
+                node.prev.next = node.next;
         
-        else if(node.next != null)
-            node.next.prev = node.prev;
+            if (node.next != null)
+                node.next.prev = node.prev;
+
+            node.destroy();
+        }
+    
     }
 
+    private void linkLast(E e){
+        final Node<E> l = last;
+        final Node<E> newNode = new Node<>(l, e, null);
+        last = newNode;
+        if (l == null)
+            first = newNode;
+        else
+            l.next = newNode;
+        size++;
+    }
+    
     /**
      * Devuelve el nombre de esta lista, si no se le ha asignado ninguno, 
      * el método devolverá un nombre por defecto.
@@ -160,18 +179,7 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
     @Override
     public boolean add(E e) {
         Objects.requireNonNull(e);
-        if(isEmpty())
-            first = last = new Node<>(e);
-        
-        else{
-            Node<E> aux = first;
-            while (aux.hasNext())
-                aux = aux.next;
-                
-            aux.next = new Node<>(aux, e, null);
-            last = aux.next;
-        }
-        size++;
+        linkLast(e);
         return true;
     }
 
@@ -181,18 +189,18 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
         if(isEmpty())
             return false;
         else{
-            boolean removed = false;
             Node<E> aux = first;
         
             for (int i = 0; i < size; i++) {
                 if (aux.data.equals(o)) {
-                    unlinkNode(aux, i);
+                    unlinkNode(aux);
+                    size--;
                     return true;
                 }
                 aux = aux.next;
             }
             
-            return removed;
+            return false;
         }
     }
 
@@ -253,8 +261,10 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
         Node<E> aux = first;
         for (int i = 0; i < size; i++) {
             for (Object object : c) {
-                if (aux.data.equals(object))
+                if (aux.data.equals(object)){
                     unlinkNode(aux);
+                    size--;
+                }
             }
             aux = aux.next;
         }
@@ -268,8 +278,10 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
         Node<E> aux = first;
         for (int i = 0; i < size; i++) {
             for (Object object : c) {
-                if (!aux.data.equals(object))
+                if (!aux.data.equals(object)){
                     unlinkNode(aux);
+                    size--;
+                }
             }
             aux = aux.next;
         }
@@ -280,6 +292,14 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
     public void clear() {
         if(isEmpty())
             return;
+        Node<E> aux = first;
+        Node<E> next;
+        for (int i = 0; i < size; i++) {
+            next = aux.next;
+            aux.destroy();
+            aux = next;
+        }
+        
         first = last = null;
         size = 0;
     }
@@ -302,9 +322,8 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
 
     @Override
     public void add(int index, E element) {
-        if (isEmpty() && index == 0) {
+        if (isEmpty() && index == 0)
             add(element);
-        }
         else{
             checkIndex(index);
             final Node<E> node = getNode(index); // Obtengo nodo en el índice establecido
@@ -326,20 +345,12 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
     @Override
     public E remove(int index) {
         checkIndex(index);
+        Node<E> node = getNode(index);
+        E element = node.data;
+        unlinkNode(node);
         
-        if(index == 0)
-            return removeFirst();
-        else if (index == size-1)
-            return removeLast();
-        else{
-            Node<E> node = getNode(index);
-            E element = node.data;
-            unlinkNode(node, index);
-        
-            node = null;
-            size--;
-            return element;
-        }
+        size--;
+        return element;
     }
 
     @Override
@@ -540,6 +551,16 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
         sBuilder = null;
         return strList;
     }
+
+//    public void testNodes() {
+//        Node<E> aux = first;
+//        
+//        while (aux != null) {            
+//            System.out.print(aux.data+"-");
+//            aux = aux.next;
+//        }
+//        System.out.println("");
+//    }
     
     private static class ElectroIterator<E> implements Iterator<E>{
         private ElectroList<E> list;

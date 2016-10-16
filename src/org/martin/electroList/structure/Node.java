@@ -52,6 +52,12 @@ public class Node<E> implements Cloneable, Externalizable {
     public void unlinkNext(){
         next = null;
     }
+    
+    public void destroy(){
+        unlinkPrevious();
+        unlinkNext();
+        data = null;
+    }
 
     public boolean equals(Node<E> another){
         return hashCode() == another.hashCode();
