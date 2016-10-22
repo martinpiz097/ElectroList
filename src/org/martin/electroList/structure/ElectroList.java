@@ -6,31 +6,65 @@
 package org.martin.electroList.structure;
 
 import java.io.Serializable;
+import java.util.AbstractSequentialList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+import org.martin.electroList.searchs.ParallelSearcher;
+import org.martin.electroList.searchs.TSearcher;
 
 /**
  *
  * @author martin
  */
-public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializable{
-    private Node<E> first;
-    private Node<E> last;
+public class ElectroList<E> extends AbstractSequentialList<E> 
+        implements Deque<E>, Cloneable, Serializable, StreamSupport<E>{
+    private transient Node<E> first;
+    private transient Node<E> last;
     private String name;
-    private int size;
+    private transient int size;
 
+    private static final long serialVersionUID = 80031400030040L;
+    
     public ElectroList() {
-        String objCode = "@"+Integer.toHexString(hashCode());
-        this.name = "ElectroList"+objCode;
-        objCode = null;
+        this.name = getClass().getSimpleName()+"@"+Integer.toHexString(hashCode());
     }
 
     public ElectroList(String name) {
         this.name = name;
+    }
+    
+    private void writeObject(java.io.ObjectOutputStream out)
+        throws java.io.IOException {
+        // Este método escribe todos los atributos que no son transient por defecto.
+        // Por esta razon todo lo demas es transient para hacer escrituras manuales.
+        out.defaultWriteObject();
+
+        out.writeInt(size);
+
+        // Write out all elements in the proper order.
+        for (Node<E> x = first; x != null; x = x.next)
+            out.writeObject(x.data);
+    }
+
+    /**
+     * Reconstitutes this {@code LinkedList} instance from a stream
+     * (that is, deserializes it).
+     */
+    private void readObject(java.io.ObjectInputStream in)
+        throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        
+        int size = in.readInt();
+
+        for (int i = 0; i < size; i++)
+            linkLast((E) in.readObject());
     }
     
     private void checkIndex(int index){
@@ -38,7 +72,7 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
             throw new IndexOutOfBoundsException(index+"");
     }
 
-    private Node<E> getNode(int index){
+    public Node<E> getNode(int index){
         if (index < (size >> 1)) {
             Node<E> aux = first;
             for (int i = 0; i < index; i++)
@@ -52,7 +86,7 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
             return aux;
         }
     }
-    
+
 //    private void unlinkNode(Node<E> node, int index){
 //        if (size == 1)
 //            first = last = null;
@@ -71,6 +105,7 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
 //        }
 //    }
 //    
+
     private void unlinkNode(Node<E> node){
         /*
         if (size == 1) {
@@ -90,13 +125,8 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
             first = last = null;
         
         else{
-            if (node.prev != null)
-                node.prev.next = node.next;
-        
-            if (node.next != null)
-                node.next.prev = node.prev;
-
-            node.destroy();
+            node.skip();
+            node = null;
         }
     
     }
@@ -112,6 +142,19 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
         size++;
     }
     
+    private void linkFirst(E e){
+        final Node<E> f = first;
+        final Node<E> newNode = new Node<>(null, e, f);
+        first = newNode;
+        if (f == null)
+            last = newNode;
+        else
+            f.prev = newNode;
+        size++;
+    }
+    
+    //private void linkBefore(E e, Node<E> node){}
+
     /**
      * Devuelve el nombre de esta lista, si no se le ha asignado ninguno, 
      * el método devolverá un nombre por defecto.
@@ -130,6 +173,79 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
     }
     
     @Override
+    public boolean anyMatch(Predicate<? super E> predicate){
+        Node<E> aux;
+        
+        for(aux = first; aux != null; aux = aux.next)
+            if (predicate.test(aux.data))
+                return true;
+        
+        return false;
+    }
+    
+    @Override
+    public boolean allMatch(Predicate<? super E> predicate){
+        Node<E> aux;
+        
+        for(aux = first; aux != null; aux = aux.next)
+            if (!predicate.test(aux.data))
+                return false;
+                
+        return true;
+    }
+    
+    @Override
+    public Stream<E> filter(Predicate<? super E> predicate){
+        ElectroList<E> filterList = new ElectroList<>();
+        Node<E> aux;
+        
+        for(aux = first; aux != null; aux = aux.next)
+            if (predicate.test(aux.data))
+                filterList.add(aux.data);
+
+        return filterList.stream();
+    }
+
+    @Override
+    public Stream<E> parallelFilter(Predicate<? super E> predicate){
+        ElectroList<E> listaResultados = new ElectroList<>();
+        TSearcher<E> searcher1 = new TSearcher<>(this, listaResultados, predicate);
+        TSearcher<E> searcher2 = new TSearcher<>(this, listaResultados, predicate, true);
+        
+        while (!searcher1.isFinished() && !searcher2.isFinished()) {}
+    
+        return listaResultados.stream();
+    }
+    
+    @Override
+    public void forEach(Consumer<? super E> action){
+        Node<E> aux;
+
+        
+        for(aux = first; aux != null; aux = aux.next)
+            action.accept(aux.data);
+    }
+
+    @Override
+    public boolean removeIf(Predicate<? super E> filter) {
+        Node<E> aux = first;
+        Node<E> next;
+        boolean removed = false;
+        
+        int listSize = size;
+        for(int i = 0; i < listSize; i++){
+            next = aux.next;
+            if (filter.test(aux.data)) {
+                unlinkNode(aux);
+                removed = true;
+                size--;
+            }
+            aux = next;
+        }
+        return removed;
+    }
+    
+    @Override
     public int size() {
         return size;
     }
@@ -141,16 +257,7 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
 
     @Override
     public boolean contains(Object o) {
-        if(isEmpty())
-            return false;
-        Node<E> aux = first;
-        
-        for (int i = 0; i < size; i++) {
-            if (aux.data.equals(o))
-                return true;
-            aux = aux.next;
-        }
-        return false;
+        return indexOf(o) != -1;
     }
 
     @Override
@@ -161,9 +268,10 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
     @Override
     public Object[] toArray() {
         E[] array = (E[]) new Object[size];
-    
         Node<E> aux = first;
-        for (int i = 0; i < size; i++) {
+        int listSize = size;
+        
+        for (int i = 0; i < listSize; i++) {
             array[i] = aux.data;
             aux = aux.next;
         }
@@ -178,28 +286,23 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
 
     @Override
     public boolean add(E e) {
-        Objects.requireNonNull(e);
         linkLast(e);
         return true;
     }
 
     @Override
     public boolean remove(Object o) {
-        Objects.requireNonNull(o);
         if(isEmpty())
             return false;
         else{
-            Node<E> aux = first;
-        
-            for (int i = 0; i < size; i++) {
+            Node<E> aux;
+            
+            for(aux = first; aux != null; aux = aux.next)
                 if (aux.data.equals(o)) {
                     unlinkNode(aux);
                     size--;
                     return true;
                 }
-                aux = aux.next;
-            }
-            
             return false;
         }
     }
@@ -216,40 +319,61 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
 
     @Override
     public boolean addAll(Collection<? extends E> c) {
-        if (isEmpty()) {
-            for (E e : c)
-                add(e);
+        E[] toArray = (E[]) c.toArray();
+        linkLast(toArray[0]);
+
+        int arrayLen = toArray.length;
+        Node<E> l = last;
+        
+        for (int i = 1; i < arrayLen; i++) {
+            // El nodo siguiente de l sera creado y el anterior a next
+            // tendra la referencia a l, por ende, cuando l sea l.next
+            // ya tendra una referencia a un nodo anterior al comienzo la 
+            // referencia de l a su anterior no se considera porque 
+            // corresponde a last que ya está referenciado.
+            l.next = new Node<>(l, toArray[i], null);
+            l = l.next;
         }
-        else{
-            Node<E> aux = last;
-            
-            for (E e : c) {
-                aux.next = new Node<>(aux, e, null);
-                aux = aux.next;
-                size++;
-            }
-            last = aux;
-        }
+        last = l;
+        size+=c.size();
+        
+//        if (isEmpty()) {
+//            for (E e : c)
+//                add(e);
+//        }
+//        else{
+//            Node<E> aux = last;
+//            
+//            for (E e : c) {
+//                aux.next = new Node<>(aux, e, null);
+//                aux = aux.next;
+//                size++;
+//            }
+//            last = aux;
+//        }
         return true;
     }
 
     @Override
     public boolean addAll(int index, Collection<? extends E> c) {
-        if(true)
-            throw new UnsupportedOperationException("todavia no esta lista");
         if (index == 0)
             return addAll(c);
         else{
             // falta esa funcion para no dejar la embarrada.
             //leaveSpace();
             Node<E> aux = getNode(index);
+            final Node<E> prev = aux.hasPrevious() ? aux.prev : null;
+
             
             for (E e : c) {
                 aux.next = new Node<>(aux, e, null);
                 aux = aux.next;
                 size++;
             }
-            last = aux;
+            aux.next = prev;
+            prev.prev = aux;
+            if (!prev.hasNext())
+                last = prev;
         }
         return true;
     }
@@ -292,11 +416,12 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
     public void clear() {
         if(isEmpty())
             return;
+        
         Node<E> aux = first;
         Node<E> next;
         for (int i = 0; i < size; i++) {
             next = aux.next;
-            aux.destroy();
+            aux.unlink();
             aux = next;
         }
         
@@ -322,8 +447,8 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
 
     @Override
     public void add(int index, E element) {
-        if (isEmpty() && index == 0)
-            add(element);
+        if (index == 0)
+            linkFirst(element);
         else{
             checkIndex(index);
             final Node<E> node = getNode(index); // Obtengo nodo en el índice establecido
@@ -358,18 +483,30 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
         if(isEmpty())
             return -1;
         
-        Node<E> aux = first;
-        for (int i = 0; i < size; i++) {
+        Node<E> aux;
+        int index = -1;
+        for (aux = first; aux != null; aux = aux.next) {
             if (aux.data.equals(o))
-                return i;
-            aux = aux.next;
+                return ++index;
+            index++;
         }
-        return -1;
+        return index;
     }
 
     @Override
     public int lastIndexOf(Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(isEmpty())
+            return -1;
+        
+        Node<E> aux;
+        int index = size-1;
+        for(aux = last; aux != null; aux = aux.prev){
+            if (aux.data.equals(o))
+                return index;
+            index--;
+        }
+        
+        return -1;
     }
 
     @Override
@@ -389,7 +526,7 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
         List<E> subList = new ElectroList<>();
         
         Node<E> aux = getNode(fromIndex);
-        for (int i = 0; i < toIndex; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             subList.add(aux.data);
             aux = aux.next;
         }
@@ -398,12 +535,27 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
 
     @Override
     public void addFirst(E e) {
-        add(0, e);
+        //add(0, e);
+        linkFirst(e);
+//        if (isEmpty())
+//            add(e);
+//        else{
+//            final Node<E> f = first;
+//            if (f == null) {
+//                first = last = new Node<>(e);
+//            }
+//            else{
+//                final Node<E> newNode = new Node<>(null, e, f);
+//                first = newNode;
+//                f.prev = first;
+//            }
+//            
+//        }
     }
 
     @Override
     public void addLast(E e) {
-        add(e);
+        linkLast(e);
     }
 
     @Override
@@ -484,12 +636,25 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
 
     @Override
     public boolean removeFirstOccurrence(Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return remove(o);
     }
 
     @Override
     public boolean removeLastOccurrence(Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(isEmpty())
+            return false;
+        else{
+            Node<E> aux;
+            
+            for(aux = last; aux != null; aux = aux.prev){
+                if (aux.data.equals(o)) {
+                    unlinkNode(aux);
+                    size--;
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     @Override
@@ -541,9 +706,10 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
         sBuilder.append(name);
         sBuilder.append(' ');
         sBuilder.append('[');
-        for (int i = 0; i < size; i++) {
-            sBuilder.append(get(i));
-            if (i < size-1)
+        Node<E> aux;
+        for (aux = first; aux != null; aux = aux.next) {
+            sBuilder.append(aux.data);
+            if (aux.next != null)
                 sBuilder.append(", ");
         }
         sBuilder.append(']');
@@ -551,6 +717,22 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
         sBuilder = null;
         return strList;
     }
+//
+//    @Override
+//    public void writeExternal(ObjectOutput out) throws IOException {
+//        out.writeObject(first);
+//        out.writeObject(last);
+//        out.writeInt(size);
+//        out.writeUTF(name);
+//    }
+//
+//    @Override
+//    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+//        first = (Node<E>) in.readObject();
+//        last = (Node<E>) in.readObject();
+//        size = in.readInt();
+//        name = in.readUTF();
+//    }
 
 //    public void testNodes() {
 //        Node<E> aux = first;
@@ -567,6 +749,8 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
         private Node<E> current;
         boolean isDescending;
 
+        private static final long serialVersionUID = 122000300400L;
+        
         public ElectroIterator(ElectroList<E> list) {
             this(list, false);
         }
@@ -590,6 +774,7 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
             list.size--;
         }
         
+        
         @Override
         public boolean hasNext() {
             return current != null;
@@ -600,6 +785,63 @@ public class ElectroList<E> implements List<E>, Deque<E>, Cloneable, Serializabl
             E data = current.data;
             current = isDescending ? current.prev : current.next;
             return data;
+        }
+        
+    }
+    
+    private static class ElectroListIterator<E> implements ListIterator<E>{
+        private ElectroList<E> list;
+        private int index;
+        private static final long serialVersionUID = 122000300500L;
+        
+        public ElectroListIterator(ElectroList<E> list) {
+            this.list = list;
+            index = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return index < list.size;
+        }
+
+        @Override
+        public E next() {
+            return list.get(index++);
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return index > 0;
+        }
+
+        @Override
+        public E previous() {
+            return list.get(--index);
+        }
+
+        @Override
+        public int nextIndex() {
+            return index;
+        }
+
+        @Override
+        public int previousIndex() {
+            return index-1;
+        }
+
+        @Override
+        public void remove() {
+            list.remove(index);
+        }
+
+        @Override
+        public void set(E e) {
+            list.set(index, e);
+        }
+
+        @Override
+        public void add(E e) {
+            list.add(e);
         }
         
     }

@@ -5,76 +5,133 @@
  */
 package org.martin.electroList.structure;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.Serializable;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author martin
  */
-public class Node<E> implements Cloneable, Externalizable {
-    Node<E> prev;
-    E data;
-    Node<E> next;
+public class Node<E> implements Cloneable, Serializable {
+    public transient Node<E> prev;
+    public E data;
+    public transient Node<E> next;
 
-    public Node(E data) {
+    Node(E data) {
         this(null, data, null);
     }
 
-    public Node(Node<E> prev, E data, Node<E> next) {
+    Node(Node<E> prev, E data, Node<E> next) {
         this.prev = prev;
         this.data = data;
         this.next = next;
     }
+    
+//    private void writeObject(java.io.ObjectOutputStream out) throws IOException{
+//        out.defaultWriteObject();
+//        out.putFields().put("data", data);
+//        out.putFields().put("next", next);
+//    }
+//    
+//    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException{
+//        in.defaultReadObject();
+//        data = (E) in.readFields().get("data", null);
+//        next = (Node<E>) in.readFields().get("next", null);
+//    }
 
-    public boolean hasNext(){
+    boolean hasNext(){
         return next != null;
     }
     
-    public boolean hasPrevious(){
+    boolean hasPrevious(){
         return prev != null;
     }
     
-    public void setPrevious(Node<E> prev){
+    /**
+     * Enlaza los nodos siguiente y anterior a éste verificando que estos existan, 
+     * es decir:
+     * next.prev = this && prev.next = this;
+     * 
+     */
+    void connect(){
+        if (hasNext())
+            next.prev = this;
+        if(hasPrevious())
+            prev.next = this;
+    }
+    
+    void connectNext(){
+        if (hasNext())
+            next.prev = this;
+    }
+    
+    void connectPrevious(){
+        if(hasPrevious())
+            prev.next = this;
+    }
+    
+    void setPrevious(Node<E> prev){
         this.prev = prev;
     }
     
-    public void setNext(Node<E> next){
+    void setNext(Node<E> next){
         this.next = next;
     }
     
-    public void unlinkPrevious(){
+    void unlinkPrevious(){
         prev = null;
     }
     
-    public void unlinkNext(){
+    void unlinkNext(){
         next = null;
     }
     
-    public void destroy(){
+    private void unlinkAll(){
         unlinkPrevious();
         unlinkNext();
+    }
+    
+    void skip(){
+        if(hasPrevious())
+            prev.next = next;
+        if(hasNext())
+            next.prev = prev;
+        unlink();
+    }
+    
+    void unlink(){
+        unlinkAll();
         data = null;
     }
 
-    public boolean equals(Node<E> another){
+    void kill() {
+        try {
+            unlink();
+            finalize();
+        } catch (Throwable ex) {
+            Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    boolean equals(Node<E> another){
         return hashCode() == another.hashCode();
     }
     
-    @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(prev);
-        out.writeObject(data);
-        out.writeObject(next);
-    }
-
-    @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        prev = (Node<E>) in.readObject();
-        data = (E) in.readObject();
-        next = (Node<E>) in.readObject();
-    }
+    
+//    @Override
+//    public void writeExternal(ObjectOutput out) throws IOException {
+//        out.writeObject(data);
+//        out.writeObject(prev);
+//        out.writeObject(next);
+//    }
+//
+//    @Override
+//    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+//        data = (E) in.readObject();
+//        prev = (Node<E>) in.readObject();
+//        next = (Node<E>) in.readObject();
+//    }
     
 }
