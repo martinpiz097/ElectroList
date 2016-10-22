@@ -10,13 +10,11 @@ import java.util.AbstractSequentialList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import org.martin.electroList.searchs.ParallelSearcher;
 import org.martin.electroList.searchs.TSearcher;
 
 /**
@@ -53,10 +51,6 @@ public class ElectroList<E> extends AbstractSequentialList<E>
             out.writeObject(x.data);
     }
 
-    /**
-     * Reconstitutes this {@code LinkedList} instance from a stream
-     * (that is, deserializes it).
-     */
     private void readObject(java.io.ObjectInputStream in)
         throws java.io.IOException, ClassNotFoundException {
         in.defaultReadObject();
