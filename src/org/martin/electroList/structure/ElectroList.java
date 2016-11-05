@@ -8,6 +8,7 @@ package org.martin.electroList.structure;
 import java.io.Serializable;
 import java.util.AbstractSequentialList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.ListIterator;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import org.martin.electroList.searchs.TSearcher;
+import org.martin.electroList.searchs.TSearcherManager;
 
 /**
  *
@@ -30,8 +31,20 @@ public class ElectroList<E> extends AbstractSequentialList<E>
 
     private static final long serialVersionUID = 80031400030040L;
     
+    public static <E> void sort(ElectroList<E> list, Comparator<E> c){
+        list.sort(c);
+    }
+    
     public ElectroList() {
         this.name = getClass().getSimpleName()+"@"+Integer.toHexString(hashCode());
+    }
+
+    public ElectroList(Collection<? extends E> col){
+        addAll(col);
+    }
+    
+    public ElectroList(E[] array){
+        addAll(array);
     }
 
     public ElectroList(String name) {
@@ -46,7 +59,6 @@ public class ElectroList<E> extends AbstractSequentialList<E>
 
         out.writeInt(size);
 
-        // Write out all elements in the proper order.
         for (Node<E> x = first; x != null; x = x.next)
             out.writeObject(x.data);
     }
@@ -66,7 +78,7 @@ public class ElectroList<E> extends AbstractSequentialList<E>
             throw new IndexOutOfBoundsException(index+"");
     }
 
-    public Node<E> getNode(int index){
+    private Node<E> getNode(int index){
         if (index < (size >> 1)) {
             Node<E> aux = first;
             for (int i = 0; i < index; i++)
@@ -126,13 +138,14 @@ public class ElectroList<E> extends AbstractSequentialList<E>
     }
 
     private void linkLast(E e){
-        final Node<E> l = last;
-        final Node<E> newNode = new Node<>(l, e, null);
+        final Node<E> newNode = new Node<>(last, e, null);
         last = newNode;
-        if (l == null)
+        
+        if (!newNode.hasPrevious())
             first = newNode;
         else
-            l.next = newNode;
+            newNode.prev.next = newNode;
+        
         size++;
     }
     
@@ -147,7 +160,15 @@ public class ElectroList<E> extends AbstractSequentialList<E>
         size++;
     }
     
-    //private void linkBefore(E e, Node<E> node){}
+    private void linkBefore(E e, Node<E> node){
+        final Node<E> newNode = new Node<>(node.prev, e, node);
+        newNode.connect();
+    }
+    
+    private void linkAfter(E e, Node<E> node){
+        final Node<E> newNode = new Node<>(node, e, node.next);
+        newNode.connect();
+    } 
 
     /**
      * Devuelve el nombre de esta lista, si no se le ha asignado ninguno, 
@@ -199,23 +220,58 @@ public class ElectroList<E> extends AbstractSequentialList<E>
 
         return filterList.stream();
     }
+    
+    @Override
+    public E findFirst(Predicate<? super E> predicate){
+        for(Node<E> f = first; f != null; f = f.next)
+            if (predicate.test(f.data))
+                return f.data;
+        return null;
+    }
+    
+    @Override
+    public E findLast(Predicate<? super E> predicate){
+        for(Node<E> l = last; l != null; l = l.prev)
+            if (predicate.test(l.data))
+                return l.data;
+        return null;
+    }
 
     @Override
-    public Stream<E> parallelFilter(Predicate<? super E> predicate){
-        ElectroList<E> listaResultados = new ElectroList<>();
-        TSearcher<E> searcher1 = new TSearcher<>(this, listaResultados, predicate);
-        TSearcher<E> searcher2 = new TSearcher<>(this, listaResultados, predicate, true);
-        
-        while (!searcher1.isFinished() && !searcher2.isFinished()) {}
+    public E findAny(Predicate<? super E> predicate){
+        return new TSearcherManager<>(this, predicate).getFirstOcurrence();
+    }
     
-        return listaResultados.stream();
+    @Override
+    public Stream<E> parallelFilter(Predicate<? super E> predicate){
+//        ElectroList<E> listaResultados = new ElectroList<>();
+//        TSearcher<E> searcher1 = new TSearcher<>(this, listaResultados, predicate);
+//        TSearcher<E> searcher2 = new TSearcher<>(this, listaResultados, predicate, true);
+//        
+//        while (!searcher1.isFinished() && !searcher2.isFinished()) {}
+
+        //return listaResultados.stream();
+        TSearcherManager<E> searchsManager = new TSearcherManager<>(this, predicate);
+
+        return searchsManager.getStreamResults();
+    }
+    
+    @Override
+    public ElectroList<E> parallelSearch(Predicate<? super E> predicate){
+//        ElectroList<E> listaResultados = new ElectroList<>();
+//        TSearcher<E> searcher1 = new TSearcher<>(this, listaResultados, predicate);
+//        TSearcher<E> searcher2 = new TSearcher<>(this, listaResultados, predicate, true);
+//        
+//        while (!searcher1.isFinished() && !searcher2.isFinished()) {}
+//    
+//        return listaResultados;
+        TSearcherManager<E> searchsManager = new TSearcherManager<>(this, predicate);
+        return searchsManager.getResults();
     }
     
     @Override
     public void forEach(Consumer<? super E> action){
         Node<E> aux;
-
-        
         for(aux = first; aux != null; aux = aux.next)
             action.accept(aux.data);
     }
@@ -237,6 +293,25 @@ public class ElectroList<E> extends AbstractSequentialList<E>
             aux = next;
         }
         return removed;
+    }
+
+    @Override
+    public boolean retainIf(Predicate<? super E> filter){
+        Node<E> aux = first;
+        Node<E> next;
+        boolean retained = false;
+        
+        int listSize = size;
+        for(int i = 0; i < listSize; i++){
+            next = aux.next;
+            if (!filter.test(aux.data)) {
+                unlinkNode(aux);
+                retained = true;
+                size--;
+            }
+            aux = next;
+        }
+        return retained;
     }
     
     @Override
@@ -260,7 +335,7 @@ public class ElectroList<E> extends AbstractSequentialList<E>
     }
 
     @Override
-    public Object[] toArray() {
+    public E[] toArray() {
         E[] array = (E[]) new Object[size];
         Node<E> aux = first;
         int listSize = size;
@@ -277,7 +352,16 @@ public class ElectroList<E> extends AbstractSequentialList<E>
         a = (T[]) toArray();
         return a;
     }
-
+    
+    public void copyTo(E[] array){
+        if (array.length != size)
+            array = (E[]) new Object[size];
+        
+        int i = 0;
+        for(Node<E> f = first; f != null; f = f.next, i++)
+            array[i] = f.data;
+    }
+    
     @Override
     public boolean add(E e) {
         linkLast(e);
@@ -286,19 +370,15 @@ public class ElectroList<E> extends AbstractSequentialList<E>
 
     @Override
     public boolean remove(Object o) {
-        if(isEmpty())
-            return false;
-        else{
-            Node<E> aux;
-            
-            for(aux = first; aux != null; aux = aux.next)
-                if (aux.data.equals(o)) {
-                    unlinkNode(aux);
-                    size--;
-                    return true;
-                }
-            return false;
-        }
+        Node<E> aux;
+        
+        for(aux = first; aux != null; aux = aux.next)
+            if (aux.data.equals(o)) {
+                unlinkNode(aux);
+                size--;
+                return true;
+            }
+        return false;
     }
 
     @Override
@@ -313,65 +393,51 @@ public class ElectroList<E> extends AbstractSequentialList<E>
 
     @Override
     public boolean addAll(Collection<? extends E> c) {
-        E[] toArray = (E[]) c.toArray();
-        linkLast(toArray[0]);
-
-        int arrayLen = toArray.length;
-        Node<E> l = last;
-        
-        for (int i = 1; i < arrayLen; i++) {
-            // El nodo siguiente de l sera creado y el anterior a next
-            // tendra la referencia a l, por ende, cuando l sea l.next
-            // ya tendra una referencia a un nodo anterior al comienzo la 
-            // referencia de l a su anterior no se considera porque 
-            // corresponde a last que ya está referenciado.
-            l.next = new Node<>(l, toArray[i], null);
-            l = l.next;
-        }
-        last = l;
-        size+=c.size();
-        
-//        if (isEmpty()) {
-//            for (E e : c)
-//                add(e);
-//        }
-//        else{
-//            Node<E> aux = last;
-//            
-//            for (E e : c) {
-//                aux.next = new Node<>(aux, e, null);
-//                aux = aux.next;
-//                size++;
-//            }
-//            last = aux;
-//        }
-        return true;
+        // Corregir problemas con algunas coleciones cuando se crea el toArray
+        // al parecer falla cuando se crean copias de una colecion tipo ElectroList
+        // ya que el array queda vacio.
+        return addAll(0, c);
     }
-
+    
     @Override
     public boolean addAll(int index, Collection<? extends E> c) {
-        if (index == 0)
-            return addAll(c);
-        else{
-            // falta esa funcion para no dejar la embarrada.
-            //leaveSpace();
-            Node<E> aux = getNode(index);
-            final Node<E> prev = aux.hasPrevious() ? aux.prev : null;
-
-            
-            for (E e : c) {
-                aux.next = new Node<>(aux, e, null);
-                aux = aux.next;
-                size++;
-            }
-            aux.next = prev;
-            prev.prev = aux;
-            if (!prev.hasNext())
-                last = prev;
+        checkIndex(index);
+        Node<E> aux = getNode(index);
+        final Node<E> next = aux.next;
+        
+        for (E e : c) {
+            aux.next = new Node<>(aux, e, null);
+            aux = aux.next;
         }
+        aux.next = next;
+        if (aux.hasNext())
+            aux.next.connect();
+        
         return true;
     }
 
+     public void addAll(E[] array){
+        addAll(array, 0);
+    }
+    
+    public void addAll(E[] array, int index){
+        if(index >= array.length || index < 0)
+            throw new IndexOutOfBoundsException(index+"");
+        
+        final int arrayLen = array.length;
+        final int elementCount = arrayLen-index;
+        add(array[index]);
+        Node<E> l = last; 
+        Node<E> newNode;
+        
+        for (int i = index+1; i < arrayLen; i++) {
+            newNode = new Node<>(l, array[i], null);
+            newNode.connectPrevious();
+            l = newNode;
+        }
+        size+=elementCount;
+    }
+    
     @Override
     public boolean removeAll(Collection<?> c) {
         if(isEmpty() || c.isEmpty())
@@ -408,17 +474,16 @@ public class ElectroList<E> extends AbstractSequentialList<E>
 
     @Override
     public void clear() {
-        if(isEmpty())
-            return;
-        
-        Node<E> aux = first;
-        Node<E> next;
-        for (int i = 0; i < size; i++) {
-            next = aux.next;
-            aux.unlink();
-            aux = next;
-        }
-        
+//        if(isEmpty())
+//            return;
+//        
+//        Node<E> aux = first;
+//        Node<E> next;
+//        for (int i = 0; i < size; i++) {
+//            next = aux.next;
+//            aux.unlink();
+//            aux = next;
+//        }
         first = last = null;
         size = 0;
     }
@@ -474,24 +539,18 @@ public class ElectroList<E> extends AbstractSequentialList<E>
 
     @Override
     public int indexOf(Object o) {
-        if(isEmpty())
-            return -1;
-        
         Node<E> aux;
-        int index = -1;
+        int index = 0;
         for (aux = first; aux != null; aux = aux.next) {
             if (aux.data.equals(o))
-                return ++index;
+                return index;
             index++;
         }
-        return index;
+        return -1;
     }
 
     @Override
     public int lastIndexOf(Object o) {
-        if(isEmpty())
-            return -1;
-        
         Node<E> aux;
         int index = size-1;
         for(aux = last; aux != null; aux = aux.prev){
@@ -589,7 +648,6 @@ public class ElectroList<E> extends AbstractSequentialList<E>
     public E pollFirst() {
         if(isEmpty())
             return null;
-        
         return removeFirst();
     }
 
@@ -618,14 +676,14 @@ public class ElectroList<E> extends AbstractSequentialList<E>
     public E peekFirst() {
         if(isEmpty())
             return null;
-        return getFirst();
+        return first.data;
     }
 
     @Override
     public E peekLast() {
         if(isEmpty())
             return null;
-        return getLast();
+        return last.data;
     }
 
     @Override
@@ -635,20 +693,16 @@ public class ElectroList<E> extends AbstractSequentialList<E>
 
     @Override
     public boolean removeLastOccurrence(Object o) {
-        if(isEmpty())
-            return false;
-        else{
-            Node<E> aux;
-            
-            for(aux = last; aux != null; aux = aux.prev){
-                if (aux.data.equals(o)) {
-                    unlinkNode(aux);
-                    size--;
-                    return true;
-                }
+        Node<E> aux;
+        
+        for(aux = last; aux != null; aux = aux.prev){
+            if (aux.data.equals(o)) {
+                unlinkNode(aux);
+                size--;
+                return true;
             }
-            return false;
         }
+        return false;
     }
 
     @Override
@@ -839,4 +893,5 @@ public class ElectroList<E> extends AbstractSequentialList<E>
         }
         
     }
+    
 }

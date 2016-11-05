@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  *
  * @author martin
  */
-public class Node<E> implements Cloneable, Serializable {
+public class Node<E> implements Cloneable, Comparable<E>, Serializable {
     public transient Node<E> prev;
     public E data;
     public transient Node<E> next;
@@ -56,10 +56,8 @@ public class Node<E> implements Cloneable, Serializable {
      * 
      */
     void connect(){
-        if (hasNext())
-            next.prev = this;
-        if(hasPrevious())
-            prev.next = this;
+        connectNext();
+        connectPrevious();
     }
     
     void connectNext(){
@@ -119,6 +117,11 @@ public class Node<E> implements Cloneable, Serializable {
         return hashCode() == another.hashCode();
     }
     
+    @Override
+    protected Node<E> clone() throws CloneNotSupportedException{
+        return new Node<>(prev, data, next);
+    }
+    
     
 //    @Override
 //    public void writeExternal(ObjectOutput out) throws IOException {
@@ -133,5 +136,19 @@ public class Node<E> implements Cloneable, Serializable {
 //        prev = (Node<E>) in.readObject();
 //        next = (Node<E>) in.readObject();
 //    }
+
+    @Override
+    public int compareTo(E o) {
+        final int hashData = data.hashCode();
+        final int hashO = o.hashCode();
+        if (hashData>=hashO)
+            if (hashData>hashO)
+                return -1;
+            
+            else
+                return 0;
+        
+        else return 1;
+    }
     
 }

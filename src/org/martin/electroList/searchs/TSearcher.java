@@ -5,7 +5,11 @@
  */
 package org.martin.electroList.searchs;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.martin.electroList.structure.ElectroList;
 import org.martin.electroList.structure.Node;
 
@@ -18,7 +22,8 @@ public class TSearcher<T> extends Thread{
     private ElectroList<T> listResults;
     private Predicate<? super T> condition;
     private boolean isDescending;
-
+    private Method getNodeMethod;
+    
     public TSearcher(ElectroList<T> listToSearch, ElectroList<T> listResults, 
             Predicate<? super T> condition) {
         this(listToSearch, listResults, condition, false);
@@ -30,11 +35,39 @@ public class TSearcher<T> extends Thread{
         this.listResults = listResults;
         this.condition = condition;
         this.isDescending = isDescending;
+        Method[] listMethods = ElectroList.class.getDeclaredMethods();
+        
+        for (Method method : listMethods) {
+            if (method.getName().equals("getNode")) {
+                getNodeMethod = method;
+                getNodeMethod.setAccessible(true);
+                break;
+            }
+        }
         start();
+        setName("@"+hashCode()+"TSearcherFor"+listToSearch.getName());
+        listMethods = null;
     }
     
     public boolean isFinished(){
         return getState() == State.TERMINATED;
+    }
+
+    public boolean hasResults(){
+        return !listResults.isEmpty();
+    }
+    
+    public T getFirstOcurrence(){
+        return listResults.getFirst();
+    }
+    
+    private Node<T> getNode(int index){
+        try {
+            return (Node<T>) getNodeMethod.invoke(listToSearch, index);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Logger.getLogger(TSearcher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
     
     @Override
@@ -43,7 +76,7 @@ public class TSearcher<T> extends Thread{
         int middle = listSize >> 1;
         
         if (isDescending) {
-            Node<T> node = listToSearch.getNode(listSize-1);
+            Node<T> node = getNode(listSize-1);
             
             for(int i = 0; i > middle; i++){
                 if (condition.test(node.data))
@@ -52,7 +85,7 @@ public class TSearcher<T> extends Thread{
             }
         }
         else{
-            Node<T> node = listToSearch.getNode(0);
+            Node<T> node = getNode(0);
             
             for(int i = 0; i < middle; i++){
                 if (condition.test(node.data))

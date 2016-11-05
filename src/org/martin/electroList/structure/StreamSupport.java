@@ -36,12 +36,54 @@ public interface StreamSupport<T>{
      * @return Stream con los elementos filtrados.
      */
     Stream<T> filter(Predicate<? super T> predicate);
+
+    /**
+     * Filtra secuencialmente la colección de acuerdo a la condición del Predicate
+     * y devuelve el primer elemento que cumpla con la condicion solicitada.
+     * @param predicate Función Predicate con la condición a evaluar.
+     * @return Objeto que cumple con la condición solicitada, en caso de estar 
+     * vacía la coleccion o de no encontrar un resultado será devuelto null.
+     */
+    T findFirst(Predicate<? super T> predicate);
+    
+    /**
+     * Filtra secuencialmente la colección de acuerdo a la condición del Predicate
+     * y devuelve el último elemento que cumpla con la condicion solicitada.
+     * @param predicate Función Predicate con la condición a evaluar.
+     * @return Objeto que cumple con la condición solicitada, en caso de estar 
+     * vacía la coleccion o de no encontrar un resultado será devuelto null.
+     */
+    T findLast(Predicate<? super T> predicate);
+    
+    /**
+     * Filtra paralelamente (multihilo) la colección de acuerdo a la condición del Predicate
+     * y devuelve el primer elemento encontrado que cumpla con la condicion solicitada.
+     * @param predicate Función Predicate con la condición a evaluar.
+     * @return Objeto que cumple con la condición solicitada, en caso de estar 
+     * vacía la coleccion o de no encontrar un resultado será devuelto null.
+     */
+    T findAny(Predicate<? super T> predicate);
     
     /**
      * Filtra paralelamente (tarea multihilo) la colección de acuerdo a la condición del Predicate.
      * @param predicate Función Predicate con la condición a evaluar.
-     * @return Stream con los elementos filtrados
+     * @return Stream con los elementos filtrados.
      */
     Stream<T> parallelFilter(Predicate<? super T> predicate);
+    
+    /**
+     * Filtra paralelamente (tarea multihilo) la colección de acuerdo a la condición del Predicate.
+     * @param predicate Función Predicate con la condición a evaluar.
+     * @return Lista con los elementos filtrados.
+     */
+    ElectroList<T> parallelSearch(Predicate<? super T> predicate);
+    
+    /**
+     * Retiene solo los elementos de la lista que cumplen con la condición del Predicate, 
+     * los demás son eliminados.
+     * @param predicate Función Predicate con la condición a evaluar.
+     * @return true si se hizo efectiva la retención; false en cualquier otro caso.
+     */
+    boolean retainIf(Predicate<? super T> predicate);
     
 }
