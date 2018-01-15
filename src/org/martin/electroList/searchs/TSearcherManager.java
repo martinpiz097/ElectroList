@@ -32,6 +32,13 @@ public class TSearcherManager<T> {
     public T getFirstOcurrence(){
         while (!searcher1.isFinished() || !searcher2.isFinished() && 
                 listResults.isEmpty()){}
+        
+        /*
+            Hay problemas con el findAny
+            Nuevo
+            while (listResults.isEmpty() &&
+                (!searcher1.isFinished() || !searcher2.isFinished())){}
+        */
         return listResults.pollFirst();
     }
     

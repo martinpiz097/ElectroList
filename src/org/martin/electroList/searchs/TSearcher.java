@@ -75,6 +75,7 @@ public class TSearcher<T> extends Thread{
         int listSize = listToSearch.size();
         int middle = listSize >> 1;
         
+        // Acceso a campos dejarlo con reflection.
         if (isDescending) {
             Node<T> node = getNode(listSize-1);
             

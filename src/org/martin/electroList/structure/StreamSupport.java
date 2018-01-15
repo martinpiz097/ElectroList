@@ -77,6 +77,23 @@ public interface StreamSupport<T>{
      * @return Lista con los elementos filtrados.
      */
     ElectroList<T> parallelSearch(Predicate<? super T> predicate);
+
+    /**
+     * Elimina y devuelve el primer elemento de la colección que cumpla con la 
+     * condición del Predicate.
+     * @param predicate Función Predicate con la condición a evaluar.
+     * @return Elemento eliminado dada la condición del Predicate.
+     */
+    
+    public T removeFirst(Predicate<? super T> predicate);
+    
+    /**
+     * Elimina y devuelve el último elemento de la colección que cumpla con la 
+     * condición del Predicate.
+     * @param predicate Función Predicate con la condición a evaluar.
+     * @return Elemento eliminado dada la condición del Predicate.
+     */
+    public T removeLast(Predicate<? super T> predicate);
     
     /**
      * Retiene solo los elementos de la lista que cumplen con la condición del Predicate, 

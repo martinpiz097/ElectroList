@@ -6,7 +6,6 @@
 package org.martin.electroList.structure;
 
 import java.io.Serializable;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,6 +14,8 @@ import java.util.logging.Logger;
  * @author martin
  */
 public class Node<E> implements Cloneable, Comparable<E>, Serializable {
+    private static StringBuilder sb;
+    //private static final ObjectUtils utils = new ObjectUtils();
     public transient Node<E> prev;
     public E data;
     public transient Node<E> next;
@@ -48,6 +49,20 @@ public class Node<E> implements Cloneable, Comparable<E>, Serializable {
     boolean hasPrevious(){
         return prev != null;
     }
+    
+    int getDequeCount(){
+        int counter = 0;
+        Node<E> n = next;
+        while (n != null) {            
+            counter++;
+            n = n.next;
+        }
+        return counter;
+    }
+    
+    /*int getSize(){
+        return utils.sizeof(this);
+    }*/
     
     /**
      * Enlaza los nodos siguiente y anterior a éste verificando que estos existan, 
@@ -113,6 +128,33 @@ public class Node<E> implements Cloneable, Comparable<E>, Serializable {
         }
     }
     
+    void print(){
+        System.out.print(data);
+        if (hasNext()) {
+            System.out.print("->");
+            next.print();
+        }
+    }
+//    
+//    String toStringSequencial(){
+//        StringBuilder sb = new StringBuilder();
+//        sb.append('[');
+//        toStringSequencial0(sb);
+//        sb.append(']');
+//        String seqToString = sb.toString();
+//        sb = null;
+//        return seqToString;
+//    }
+//    
+//    void toStringSequencial0(StringBuilder sb){
+//        sb.append(data.toString());
+//        if (hasNext()){
+//            sb.append(',');
+//            sb.append(' ');
+//            next.toStringSequencial0(sb);
+//        }
+//    }
+    
     boolean equals(Node<E> another){
         return hashCode() == another.hashCode();
     }
@@ -149,6 +191,11 @@ public class Node<E> implements Cloneable, Comparable<E>, Serializable {
                 return 0;
         
         else return 1;
+    }
+
+    @Override
+    public String toString() {
+        return data.toString();
     }
     
 }

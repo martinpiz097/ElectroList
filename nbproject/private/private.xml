@@ -2,22 +2,36 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group name="Java WEB">
-            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/test/ThreadMachine.java</file>
-            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/Node.java</file>
-            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/searchs/TSearcherManager.java</file>
-            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/ElectroList.java</file>
-            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/StreamSupport.java</file>
-            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/test/Main.java</file>
-            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/searchs/TSearcher.java</file>
-        </group>
         <group name="Listas">
             <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/StreamSupport.java</file>
-            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/searchs/TSearcherManager.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/Node.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/searchs/TSearcher.java</file>
             <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/test/ThreadMachine.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/ElectroList.java</file>
+        </group>
+        <group name="jConsulta">
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/ElectroList.java</file>
+        </group>
+        <group name="Java WEB">
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/ElectroList.java</file>
+        </group>
+        <group name="cosillasGeniales">
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/ElectroList.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/test/Main.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/ObjectUtils.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/Node.java</file>
+        </group>
+        <group name="cloudService">
             <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/test/Main.java</file>
             <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/ElectroList.java</file>
-            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/searchs/TSearcher.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/Node.java</file>
+        </group>
+        <group name="Ghostdb">
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/searchs/TSearcherManager.java</file>
+        </group>
+        <group name="tigerdb">
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/ElectroList.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/electroList/src/org/martin/electroList/structure/Node.java</file>
         </group>
     </open-files>
 </project-private>

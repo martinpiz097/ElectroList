@@ -11,8 +11,10 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -37,6 +39,7 @@ public class ElectroList<E> extends AbstractSequentialList<E>
     
     public ElectroList() {
         this.name = getClass().getSimpleName()+"@"+Integer.toHexString(hashCode());
+        //this.name = getClass().getSimpleName()+'@'+hashCode();
     }
 
     public ElectroList(Collection<? extends E> col){
@@ -127,9 +130,10 @@ public class ElectroList<E> extends AbstractSequentialList<E>
         }
         */
         
-        if (size == 1)
+        if (size == 1){
+            first.data = null;
             first = last = null;
-        
+        }
         else{
             node.skip();
             node = null;
@@ -186,6 +190,40 @@ public class ElectroList<E> extends AbstractSequentialList<E>
     public void setName(String name) {
         this.name = name;
     }
+    
+//    private void print(){
+//        System.out.print("[");
+//        if (!isEmpty())
+//            first.print();
+//        
+//        System.out.println("]");
+//    }
+    
+    public void collectTo(List<E> list){
+        Node<E> f = first;
+        while (f != null) {            
+            list.add(f.data);
+            f = f.next;
+        }
+    }
+    
+    public LinkedList<E> collect(){
+        LinkedList<E> list = new LinkedList<>();
+        collectTo(list);
+        return list;
+    }
+    
+    public void drainTo(List<E> list){
+        collectTo(list);
+        clear();
+    }
+    
+    public LinkedList<E> drain(){
+        LinkedList<E> listCollect = collect();
+        clear();
+        return listCollect;
+    }
+    
     
     @Override
     public boolean anyMatch(Predicate<? super E> predicate){
@@ -275,6 +313,30 @@ public class ElectroList<E> extends AbstractSequentialList<E>
         for(aux = first; aux != null; aux = aux.next)
             action.accept(aux.data);
     }
+    
+    @Override
+    public E removeFirst(Predicate<? super E> predicate){
+        E data;
+        for(Node<E> f = first; f != null; f = f.next)
+            if (predicate.test(f.data)){
+                data = f.data;
+                unlinkNode(f);
+                return data;
+            }
+        return null;
+    }
+    
+    @Override
+    public E removeLast(Predicate<? super E> predicate){
+        E data;
+        for(Node<E> l = last; l != null; l = l.prev)
+            if (predicate.test(l.data)){
+                data = l.data;
+                unlinkNode(l);
+                return data;
+            }
+        return null;
+    }
 
     @Override
     public boolean removeIf(Predicate<? super E> filter) {
@@ -313,6 +375,21 @@ public class ElectroList<E> extends AbstractSequentialList<E>
         }
         return retained;
     }
+
+//    /**
+//     * Devuelve el tamaño en bytes que ocupa la lista en la RAM.
+//     * @return Tamaño en bytes de la lista en memoria.
+//     */
+//    public int getSizeInMemory(){
+//        int sizeOf = 0;
+//        
+//        Node<E> f = first;
+//        for (int i = 0; i < size; i++) {
+//            sizeOf+=f.getSize();
+//            f = f.next;
+//        }
+//        return sizeOf;
+//    }
     
     @Override
     public int size() {
@@ -492,6 +569,19 @@ public class ElectroList<E> extends AbstractSequentialList<E>
     public E get(int index) {
         checkIndex(index);
         return getNode(index).data;
+    }
+    
+    public ElectroList<E> get(int start, int end){
+        checkIndex(start);
+        checkIndex(end);
+        ElectroList<E> listGet = new ElectroList<>();
+        
+        Node<E> aux = getNode(start);
+        for (int i = start; i < end ; i++){
+            listGet.add(aux.data);
+            aux = aux.next;
+        }
+        return listGet;
     }
 
     @Override
@@ -765,6 +855,26 @@ public class ElectroList<E> extends AbstractSequentialList<E>
         sBuilder = null;
         return strList;
     }
+    
+    @Override
+    public boolean equals(Object another){
+        return this == another;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + Objects.hashCode(this.first);
+        hash = 97 * hash + Objects.hashCode(this.last);
+        hash = 97 * hash + Objects.hashCode(this.name);
+        hash = 97 * hash + this.size;
+        return hash;
+    }
+    
+    public boolean equals(ElectroList<E> anotherList){
+        return this == anotherList;
+    }
+    
 //
 //    @Override
 //    public void writeExternal(ObjectOutput out) throws IOException {
