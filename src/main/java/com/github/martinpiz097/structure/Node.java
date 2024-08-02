@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.mpizutil.electrolist.structure;
+package com.github.martinpiz097.structure;
 
 import java.io.Serializable;
 import java.util.logging.Level;

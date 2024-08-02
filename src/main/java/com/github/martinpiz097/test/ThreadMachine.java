@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.mpizutil.electrolist.test;
+package com.github.martinpiz097.test;
 
-import org.mpizutil.electrolist.structure.ElectroList;
+import com.github.martinpiz097.structure.ElectroList;
 
 /**
  *

@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.mpizutil.electrolist.searchs;
+package com.github.martinpiz097.searchs;
 
-import org.mpizutil.electrolist.structure.ElectroList;
+import com.github.martinpiz097.structure.ElectroList;
 
 import java.util.function.Predicate;
 import java.util.stream.Stream;
