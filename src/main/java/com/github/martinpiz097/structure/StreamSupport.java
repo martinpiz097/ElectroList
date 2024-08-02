@@ -5,6 +5,7 @@
  */
 package com.github.martinpiz097.structure;
 
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -76,7 +77,7 @@ public interface StreamSupport<T>{
      * @param predicate Función Predicate con la condición a evaluar.
      * @return Lista con los elementos filtrados.
      */
-    ElectroList<T> parallelSearch(Predicate<? super T> predicate);
+    List<T> parallelSearch(Predicate<? super T> predicate);
 
     /**
      * Elimina y devuelve el primer elemento de la colección que cumpla con la 
