@@ -5,7 +5,7 @@
  */
 package com.github.martinpiz097.structure;
 
-import com.github.martinpiz097.searchs.TSearcherManager;
+import com.github.martinpiz097.search.TSearcherManager;
 
 import java.io.Serializable;
 import java.util.*;

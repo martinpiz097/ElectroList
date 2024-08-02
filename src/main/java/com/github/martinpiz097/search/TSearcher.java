@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.github.martinpiz097.searchs;
+package com.github.martinpiz097.search;
 
 import com.github.martinpiz097.structure.ElectroList;
 import com.github.martinpiz097.structure.Node;
