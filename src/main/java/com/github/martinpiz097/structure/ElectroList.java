@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  * @author martin
  */
 public class ElectroList<E> extends AbstractSequentialList<E>
-        implements Deque<E>, Cloneable, Serializable, StreamSupport<E> {
+        implements Deque<E>, Cloneable, Serializable, Streamable<E> {
     private transient Node<E> first;
     private transient Node<E> last;
     private final String name;
@@ -667,22 +667,7 @@ public class ElectroList<E> extends AbstractSequentialList<E>
 
     @Override
     public void addFirst(E e) {
-        //add(0, e);
         linkFirst(e);
-//        if (isEmpty())
-//            add(e);
-//        else{
-//            final Node<E> f = first;
-//            if (f == null) {
-//                first = last = new Node<>(e);
-//            }
-//            else{
-//                final Node<E> newNode = new Node<>(null, e, f);
-//                first = newNode;
-//                f.prev = first;
-//            }
-//
-//        }
     }
 
     @Override

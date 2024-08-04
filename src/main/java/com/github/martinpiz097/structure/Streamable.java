@@ -14,7 +14,7 @@ import java.util.stream.Stream;
  * @author martin
  * @param <T> Tipo de dato con los que el StreamSupport trabajará.
  */
-public interface StreamSupport<T>{
+public interface Streamable<T>{
     /**
      * Devuelve true si al menos uno de los elementos cumple
      * con el Predicate entregado; false en caso contrario.
