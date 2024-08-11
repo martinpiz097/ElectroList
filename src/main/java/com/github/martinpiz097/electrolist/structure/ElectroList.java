@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.github.martinpiz097.structure;
+package com.github.martinpiz097.electrolist.structure;
 
-import com.github.martinpiz097.search.TSearcherManager;
+import com.github.martinpiz097.electrolist.search.TSearcherManager;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -78,55 +78,20 @@ public class ElectroList<E> extends AbstractSequentialList<E>
     }
 
     private Node<E> getNode(int index) {
-        if (index == size || index < 0)
-            return null;
+        Node<E> aux;
         if (index < (size >> 1)) {
-            Node<E> aux = first;
+            aux = first;
             for (int i = 0; i < index; i++)
                 aux = aux.next;
-            return aux;
         } else {
-            Node<E> aux = last;
+            aux = last;
             for (int i = size - 1; i > index; i--)
                 aux = aux.prev;
-            return aux;
         }
+        return aux;
     }
 
-//    private void unlinkNode(Node<E> node, int index){
-//        if (size == 1)
-//            first = last = null;
-//        else if (index == 0) {
-//            first = node.next;
-//            first.unlinkPrevious();
-//        }
-//        else if (index == size-1) {
-//            last = node.prev;
-//            last.unlinkNext();
-//        }
-//        else{
-//            System.out.println("Cayo al else");
-//            node.prev.next = node.next;
-//            node.next.prev = node.prev;
-//        }
-//    }
-//
-
     private void unlinkNode(Node<E> node) {
-        /*
-        if (size == 1) {
-            first = last = null;
-        }
-        else if (node.equals(first)) {
-            first = first.next;
-            first.unlinkPrevious();
-        }
-        else if (node.equals(last)) {
-            last = last.prev;
-            last.unlinkNext();
-        }
-        */
-
         if (size == 1) {
             first.data = null;
             first = last = null;
@@ -179,14 +144,6 @@ public class ElectroList<E> extends AbstractSequentialList<E>
     public String getName() {
         return name;
     }
-
-//    private void print(){
-//        System.out.print("[");
-//        if (!isEmpty())
-//            first.print();
-//
-//        System.out.println("]");
-//    }
 
     public void collectTo(List<E> list) {
         Node<E> f = first;
@@ -271,28 +228,14 @@ public class ElectroList<E> extends AbstractSequentialList<E>
 
     @Override
     public Stream<E> parallelFilter(Predicate<? super E> predicate) {
-//        List<E> listaResultados = new ElectroList<>();
-//        TSearcher<E> searcher1 = new TSearcher<>(this, listaResultados, predicate);
-//        TSearcher<E> searcher2 = new TSearcher<>(this, listaResultados, predicate, true);
-//
-//        while (!searcher1.isFinished() && !searcher2.isFinished()) {}
-
-        //return listaResultados.stream();
-        TSearcherManager<E> searchsManager = new TSearcherManager<>(this, predicate);
+        final TSearcherManager<E> searchsManager = new TSearcherManager<>(this, predicate);
 
         return searchsManager.getStreamResults();
     }
 
     @Override
     public List<E> parallelSearch(Predicate<? super E> predicate) {
-//        List<E> listaResultados = new ElectroList<>();
-//        TSearcher<E> searcher1 = new TSearcher<>(this, listaResultados, predicate);
-//        TSearcher<E> searcher2 = new TSearcher<>(this, listaResultados, predicate, true);
-//
-//        while (!searcher1.isFinished() && !searcher2.isFinished()) {}
-//
-//        return listaResultados;
-        TSearcherManager<E> searchsManager = new TSearcherManager<>(this, predicate);
+        final TSearcherManager<E> searchsManager = new TSearcherManager<>(this, predicate);
         return searchsManager.getResults();
     }
 
@@ -364,21 +307,6 @@ public class ElectroList<E> extends AbstractSequentialList<E>
         }
         return retained;
     }
-
-//    /**
-//     * Devuelve el tamaño en bytes que ocupa la lista en la RAM.
-//     * @return Tamaño en bytes de la lista en memoria.
-//     */
-//    public int getSizeInMemory(){
-//        int sizeOf = 0;
-//
-//        Node<E> f = first;
-//        for (int i = 0; i < size; i++) {
-//            sizeOf+=f.getSize();
-//            f = f.next;
-//        }
-//        return sizeOf;
-//    }
 
     @Override
     public int size() {
@@ -540,16 +468,6 @@ public class ElectroList<E> extends AbstractSequentialList<E>
 
     @Override
     public void clear() {
-//        if(isEmpty())
-//            return;
-//
-//        Node<E> aux = first;
-//        Node<E> next;
-//        for (int i = 0; i < size; i++) {
-//            next = aux.next;
-//            aux.unlink();
-//            aux = next;
-//        }
         first = last = null;
         size = 0;
     }
@@ -904,33 +822,6 @@ public class ElectroList<E> extends AbstractSequentialList<E>
     public boolean equals(List<E> anotherList) {
         return this == anotherList;
     }
-
-//
-//    @Override
-//    public void writeExternal(ObjectOutput out) throws IOException {
-//        out.writeObject(first);
-//        out.writeObject(last);
-//        out.writeInt(size);
-//        out.writeUTF(name);
-//    }
-//
-//    @Override
-//    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-//        first = (Node<E>) in.readObject();
-//        last = (Node<E>) in.readObject();
-//        size = in.readInt();
-//        name = in.readUTF();
-//    }
-
-//    public void testNodes() {
-//        Node<E> aux = first;
-//
-//        while (aux != null) {
-//            System.out.print(aux.data+"-");
-//            aux = aux.next;
-//        }
-//        System.out.println("");
-//    }
 
     private static class ElectroIterator<E> implements Iterator<E> {
         private final ElectroList<E> list;

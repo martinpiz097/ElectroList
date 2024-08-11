@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.github.martinpiz097.search;
+package com.github.martinpiz097.electrolist.search;
 
-import com.github.martinpiz097.structure.ElectroList;
-import com.github.martinpiz097.structure.Node;
+import com.github.martinpiz097.electrolist.structure.ElectroList;
+import com.github.martinpiz097.electrolist.structure.Node;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -19,10 +19,10 @@ import java.util.logging.Logger;
  * @author martin
  */
 public class TSearcher<T> extends Thread{
-    private ElectroList<T> listToSearch;
-    private ElectroList<T> listResults;
-    private Predicate<? super T> condition;
-    private boolean isDescending;
+    private final ElectroList<T> listToSearch;
+    private final ElectroList<T> listResults;
+    private final Predicate<? super T> condition;
+    private final boolean isDescending;
     private Method getNodeMethod;
     
     public TSearcher(ElectroList<T> listToSearch, ElectroList<T> listResults, 
@@ -67,29 +67,29 @@ public class TSearcher<T> extends Thread{
             return (Node<T>) getNodeMethod.invoke(listToSearch, index);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Logger.getLogger(TSearcher.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
         }
-        return null;
     }
     
     @Override
     public void run() {
-        int listSize = listToSearch.size();
-        int middle = listSize >> 1;
-        
+        final int listSize = listToSearch.size();
+        final int firstIndex = 0;
+        final int lastIndex = listSize - 1;
+        final int middle = listSize >> 1;
+
+        Node<T> node;
         // Acceso a campos dejarlo con reflection.
         if (isDescending) {
-            Node<T> node = getNode(listSize-1);
-            
-            for(int i = 0; i > middle; i++){
+            node = getNode(lastIndex);
+            for(int i = lastIndex; i > middle; i--){
                 if (condition.test(node.data))
                     listResults.add(node.data);
                 node = node.prev;
             }
-        }
-        else{
-            Node<T> node = getNode(0);
-            
-            for(int i = 0; i < middle; i++){
+        } else {
+            node = getNode(firstIndex);
+            for(int i = firstIndex; i <= middle; i++){
                 if (condition.test(node.data))
                     listResults.add(node.data);
                 node = node.next;

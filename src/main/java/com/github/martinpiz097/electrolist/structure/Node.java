@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.github.martinpiz097.structure;
+package com.github.martinpiz097.electrolist.structure;
 
 import java.io.Serializable;
 import java.util.logging.Level;
@@ -14,8 +14,6 @@ import java.util.logging.Logger;
  * @author martin
  */
 public class Node<E> implements Cloneable, Comparable<E>, Serializable {
-    private static StringBuilder sb;
-    //private static final ObjectUtils utils = new ObjectUtils();
     public transient Node<E> prev;
     public E data;
     public transient Node<E> next;
@@ -30,22 +28,10 @@ public class Node<E> implements Cloneable, Comparable<E>, Serializable {
         this.next = next;
     }
     
-//    private void writeObject(java.io.ObjectOutputStream out) throws IOException{
-//        out.defaultWriteObject();
-//        out.putFields().put("data", data);
-//        out.putFields().put("next", next);
-//    }
-//    
-//    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException{
-//        in.defaultReadObject();
-//        data = (E) in.readFields().get("data", null);
-//        next = (Node<E>) in.readFields().get("next", null);
-//    }
-
     boolean hasNext(){
         return next != null;
     }
-    
+
     boolean hasPrevious(){
         return prev != null;
     }
@@ -59,10 +45,6 @@ public class Node<E> implements Cloneable, Comparable<E>, Serializable {
         }
         return counter;
     }
-    
-    /*int getSize(){
-        return utils.sizeof(this);
-    }*/
     
     /**
      * Enlaza los nodos siguiente y anterior a éste verificando que estos existan, 
@@ -135,26 +117,7 @@ public class Node<E> implements Cloneable, Comparable<E>, Serializable {
             next.print();
         }
     }
-//    
-//    String toStringSequencial(){
-//        StringBuilder sb = new StringBuilder();
-//        sb.append('[');
-//        toStringSequencial0(sb);
-//        sb.append(']');
-//        String seqToString = sb.toString();
-//        sb = null;
-//        return seqToString;
-//    }
-//    
-//    void toStringSequencial0(StringBuilder sb){
-//        sb.append(data.toString());
-//        if (hasNext()){
-//            sb.append(',');
-//            sb.append(' ');
-//            next.toStringSequencial0(sb);
-//        }
-//    }
-    
+
     boolean equals(Node<E> another){
         return hashCode() == another.hashCode();
     }
@@ -164,21 +127,6 @@ public class Node<E> implements Cloneable, Comparable<E>, Serializable {
         return new Node<>(prev, data, next);
     }
     
-    
-//    @Override
-//    public void writeExternal(ObjectOutput out) throws IOException {
-//        out.writeObject(data);
-//        out.writeObject(prev);
-//        out.writeObject(next);
-//    }
-//
-//    @Override
-//    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-//        data = (E) in.readObject();
-//        prev = (Node<E>) in.readObject();
-//        next = (Node<E>) in.readObject();
-//    }
-
     @Override
     public int compareTo(E o) {
         final int hashData = data.hashCode();

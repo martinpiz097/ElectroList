@@ -1,4 +1,4 @@
-package com.github.martinpiz097.structure;
+package com.github.martinpiz097.electrolist.structure;
 
 
 import java.io.UnsupportedEncodingException;
