@@ -31,4 +31,4 @@ build/
 ### Mac OS ###
 .DS_Store
 
-src/main/java/com/github/martinpiz097/electrolist/testing
+src/main/java/org/mpizutil/electrolist/testing

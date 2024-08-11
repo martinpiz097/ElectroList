@@ -5,7 +5,7 @@
  */
 package structure;
 
-import com.github.martinpiz097.electrolist.structure.ElectroList;
+import org.mpizutil.electrolist.structure.ElectroList;
 import org.junit.jupiter.api.*;
 
 import java.util.*;

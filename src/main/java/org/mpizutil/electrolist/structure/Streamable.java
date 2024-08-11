@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.github.martinpiz097.electrolist.structure;
+package org.mpizutil.electrolist.structure;
 
 import java.util.List;
 import java.util.function.Predicate;

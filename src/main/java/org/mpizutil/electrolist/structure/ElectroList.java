@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.github.martinpiz097.electrolist.structure;
+package org.mpizutil.electrolist.structure;
 
-import com.github.martinpiz097.electrolist.search.TSearcherManager;
+import org.mpizutil.electrolist.search.TSearcherManager;
 
 //import java.io.Serial;
 import java.io.Serial;
