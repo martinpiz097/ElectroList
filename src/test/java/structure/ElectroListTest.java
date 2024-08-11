@@ -7,10 +7,8 @@ package structure;
 
 import com.github.martinpiz097.electrolist.structure.ElectroList;
 import org.junit.jupiter.api.*;
-import org.junit.platform.commons.annotation.Testable;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.*;

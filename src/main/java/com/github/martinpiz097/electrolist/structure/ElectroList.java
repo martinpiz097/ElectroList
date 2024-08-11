@@ -7,6 +7,7 @@ package com.github.martinpiz097.electrolist.structure;
 
 import com.github.martinpiz097.electrolist.search.TSearcherManager;
 
+//import java.io.Serial;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
