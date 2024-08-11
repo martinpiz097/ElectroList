@@ -241,6 +241,7 @@ public class ElectroList<E> extends AbstractSequentialList<E>
 
     @Override
     public void forEach(Consumer<? super E> action) {
+        Objects.requireNonNull(action);
         Node<E> aux;
         for (aux = first; aux != null; aux = aux.next)
             action.accept(aux.data);
